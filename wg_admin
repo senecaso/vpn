@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import argparse
+import configparser
+import sys
+
+def add(args):
+    print("ADD %s" % args)
+    config = configparser.ConfigParser()
+    config.read('/tmp/wg0.conf')
+    print("sections: %s" % config.sections())
+
+def rm(args):
+    print("RM %s" % args)
+
+def ls(args):
+    print("LS: %s" % args)
+
+
+parser = argparse.ArgumentParser(prog='wg_admin')
+
+subparsers = parser.add_subparsers(help='subcommand')
+
+# ADD subcommand
+parser_add = subparsers.add_parser('add', help='add a peer')
+parser_add.add_argument('peer', help='peer alias to add')
+parser_add.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
+parser_add.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help='path to store output')
+parser_add.add_argument('-t', '--type', choices=['svg', 'png', 'ansiutf', 'conf'], default='conf', help='output type')
+parser_add.set_defaults(func=add)
+
+# RM subcommand
+parser_rm = subparsers.add_parser('rm', help='remove a user')
+parser_rm.add_argument('peer', help='peer alias to remove')
+parser_rm.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
+parser_rm.set_defaults(func=rm)
+
+# LS subcommand
+parser_ls = subparsers.add_parser('ls', help='list users')
+parser_ls.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
+parser_ls.set_defaults(func=ls)
+
+args = parser.parse_args()
+args.func(args) # call the subcommand function to execute based on the parsed args
