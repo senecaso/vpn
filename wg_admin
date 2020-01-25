@@ -1,14 +1,28 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import configparser
 import sys
 
+from collections import OrderedDict
+
+class multidict(OrderedDict):
+    _unique = 0   # class variable
+
+    def __setitem__(self, key, val):
+        if isinstance(val, dict) and key == "Peer":
+            self._unique += 1
+            key += str(self._unique)
+
+        OrderedDict.__setitem__(self, key, val)
+
+
 def add(args):
     print("ADD %s" % args)
-    config = configparser.ConfigParser()
-    config.read('/tmp/wg0.conf')
+    config = configparser.ConfigParser(defaults=None, comment_prefixes='/', allow_no_value=True, dict_type=multidict, strict=False)
+    config.read_file(args.input)
     print("sections: %s" % config.sections())
+    # print(config['Peer'].keys())
 
 def rm(args):
     print("RM %s" % args)
