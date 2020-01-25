@@ -3,6 +3,7 @@
 import argparse
 import configparser
 import sys
+import ipaddress
 
 from collections import OrderedDict
 
@@ -16,13 +17,52 @@ class multidict(OrderedDict):
 
         OrderedDict.__setitem__(self, key, val)
 
+class WGConfig:
+    def __init__(self, config):
+        self.config = config
 
-def add(args):
-    print("ADD %s" % args)
+        for item in config.items('Interface'):
+            if (item[0] == 'address'):
+                self.address = [ipaddress.ip_network(str.strip(x), strict=False) for x in item[1].split(',')]
+                # self.address = list(map(ipaddress.ip_network(strict=False), map(str.strip, item[1].split(','))))
+            elif (item[0] == 'listenport'):
+                self.listen_port = item[1]
+
+    def __str__(self):
+        return "{address: %s, listen_port: %s}" % (self.address, self.listen_port)
+
+def parse_config(args):
     config = configparser.ConfigParser(defaults=None, comment_prefixes='/', allow_no_value=True, dict_type=multidict, strict=False)
     config.read_file(args.input)
     print("sections: %s" % config.sections())
-    # print(config['Peer'].keys())
+
+    # extract an alias name for each peer based on the `# alias: ` comment
+    peers = {}
+    for key in config.sections():
+        if key.startswith('Peer'):
+            alias = key # just in case no alias is defined
+            for line in config.items(key):
+                if (line[0] == '# alias'):
+                    alias = line[1]
+                    break
+            peers[alias] = config.items(key)
+
+    print("peers: %s" % peers)
+
+    return WGConfig(config)
+
+def add(args):
+    wg_config = parse_config(args)
+    print("WG: %s" % wg_config)
+
+    # generate a new PSK
+    # TODO
+
+    # generate a new PK
+    # TODO
+
+    # generate a new IP
+    # TODO
 
 def rm(args):
     print("RM %s" % args)
@@ -41,6 +81,7 @@ parser_add.add_argument('peer', help='peer alias to add')
 parser_add.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
 parser_add.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, help='path to store output')
 parser_add.add_argument('-t', '--type', choices=['svg', 'png', 'ansiutf', 'conf'], default='conf', help='output type')
+parser_add.add_argument('-e', '--endpoint', help='public endpoint used to hit this server')
 parser_add.set_defaults(func=add)
 
 # RM subcommand
