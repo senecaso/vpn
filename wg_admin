@@ -5,7 +5,7 @@ import subprocess
 import sys
 import ipaddress
 import os
-import yaml
+from ruamel import yaml
 
 from collections import OrderedDict
 
@@ -33,20 +33,13 @@ class WGConfig:
         if 'Interface' not in self.config:
             # first time this has been run, set one up
             self.config['Interface'] = {}
-            self.config['Interface']['Address'] = [ipaddress.ip_interface('10.19.49.1/24'), ipaddress.ip_interface('fd9d:bc11:4021::1/48')]
+            self.config['Interface']['Address'] = ['10.19.49.1/24', 'fd9d:bc11:4021::1/48']
             self.config['Interface']['ListenPort'] = 51820
             self.config['Interface']['PrivateKey'] = generate_pk('wg')
             self.config['Interface']['SaveConfig'] = False
-        else:
-            # YAML would have loaded these as strings, so we need to convert them to a usable type
-            self.config['Interface']['Address'] = [ipaddress.ip_interface(i) for i in self.config['Interface']['Address']] 
 
         if 'Peers' not in self.config:
             self.config['Peers'] = {}
-        else:
-            # YAML will have loaded the IPs as strings, so convert them now
-            for peer in self.config['Peers']:
-                self.config['Peers'][peer]['AllowedIPs'] = [ipaddress.ip_interface(i) for i in self.config['Peers'][peer]['AllowedIPs']] 
 
         self.used_ips = set()
         for peer in self.config['Peers']:
@@ -132,7 +125,7 @@ def generate_psk(wg):
     return out.decode("utf-8").strip()
 
 def add(args):
-    wg_config = WGConfig(args.input, endpoint)
+    wg_config = WGConfig(args.input, args.endpoint)
 
     # generate a new secrets
     private_key = generate_pk('/usr/bin/wg')
@@ -144,7 +137,7 @@ def add(args):
     for address in wg_config.get_address():
         i = 1
         while i < 1024:
-            ip = ipaddress.ip_interface(address.ip + i)
+            ip = str(ipaddress.ip_interface(ipaddress.ip_interface(address).ip + i))
             if ip not in wg_config.get_used_ips():
                 allowed_ips.append(ip)
                 break
@@ -155,8 +148,8 @@ def add(args):
 
     client_conf = '[Interface]\n'
     client_conf += 'PrivateKey = ' + private_key + '\n'
-    client_conf += 'Address = ' + str(allowed_ips[0].ip) + '/24, ' + str(allowed_ips[1].ip) + '/48' + '\n' # TODO: figure out how to properly generate these
-    client_conf += 'DNS = ' + wg_config.get_dns() + '\n'
+    client_conf += 'Address = ' + allowed_ips[0].replace('/32', '/24') + ', ' + allowed_ips[1].replace('/128', '/48') + '\n' # TODO: figure out how to properly generate these
+    client_conf += 'DNS = ' + ', '.join(wg_config.get_dns()) + '\n'
     client_conf += "\n"
     client_conf += '[Peer]\n'
     client_conf += 'PublicKey = ' + generate_public_key('/usr/bin/wg', wg_config.get_private_key()) + '\n'
@@ -165,17 +158,21 @@ def add(args):
     client_conf += 'Endpoint = ' + wg_config.get_endpoint() + ':' + str(wg_config.get_listen_port()) + '\n'
 
     # generate the client config file
-    with os.fdopen(os.open(args.output + '/' + args.peer + '.conf', os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
+    with os.fdopen(os.open(args.output + '/' + args.peer + '.conf', os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(client_conf)
 
-    # TODO: update the YAML file
+    # update the YAML file
+    with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
+        handle.write(yaml.dump(wg_config.config))
 
 
 def rm(args):
     wg_config = WGConfig(args.input)
     wg_config.rm_peer(args.peer)
     
-    # TODO: update the YAML file
+    # update the YAML file
+    with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
+        handle.write(yaml.dump(wg_config.config))
 
 def ls(args):
     wg_config = WGConfig(args.input)
