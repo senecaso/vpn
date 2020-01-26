@@ -192,26 +192,26 @@ subparsers = parser.add_subparsers(help='subcommand')
 # ADD subcommand
 parser_add = subparsers.add_parser('add', help='add a peer')
 parser_add.add_argument('peer', help='peer alias to add')
-parser_add.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
-parser_add.add_argument('-o', '--output', help='directory to store output')
+parser_add.add_argument('-i', '--input', type=argparse.FileType('r'), default='/etc/wireguard/wg_admin.yaml', help='wg_admin config file')
+parser_add.add_argument('-o', '--output', default='/tmp', help='directory to store client config')
 parser_add.add_argument('-e', '--endpoint', help='public endpoint used to hit this server')
 parser_add.set_defaults(func=add)
 
 # RM subcommand
 parser_rm = subparsers.add_parser('rm', help='remove a user')
 parser_rm.add_argument('peer', help='peer alias to remove')
-parser_rm.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
+parser_rm.add_argument('-i', '--input', type=argparse.FileType('r'), default='/etc/wireguard/wg_admin.yaml', help='wg_admin config file')
 parser_rm.set_defaults(func=rm)
 
 # LS subcommand
 parser_ls = subparsers.add_parser('ls', help='list users')
-parser_ls.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg config file')
+parser_ls.add_argument('-i', '--input', type=argparse.FileType('r'), default='/etc/wireguard/wg_admin.yaml', help='wg_admin config file')
 parser_ls.set_defaults(func=ls)
 
 # SYNC subcommand
 parser_sync = subparsers.add_parser('sync', help='sync config to WireGuard config file')
-parser_sync.add_argument('-i', '--input', type=argparse.FileType('r'), default='-', help='wg_amdin config file')
-parser_sync.add_argument('-o', '--output', help='path to WireGuard config file (ie: /etc/wireguard/wg0.conf)')
+parser_sync.add_argument('-i', '--input', type=argparse.FileType('r'), default='/etc/wireguard/wg_admin.yaml', help='wg_amdin config file')
+parser_sync.add_argument('-o', '--output', default='/etc/wireguard/wg0.conf', help='path to WireGuard config file')
 parser_sync.set_defaults(func=sync)
 
 args = parser.parse_args()
