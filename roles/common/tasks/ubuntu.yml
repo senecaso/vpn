@@ -1,0 +1,88 @@
+---
+- name: Gather facts
+  setup:
+
+- name: AppArmor installed
+  apt:
+    name: apparmor
+    state: present
+    update_cache: true
+
+#- name: dev-sec.os-hardening
+#  import_role:
+#    name: dev-sec.os-hardening
+#  vars:
+#    sysctl_overwrite:
+#      net.ipv4.ip_forward: 1
+#      net.ipv4.conf.all.forwarding: 1
+#      net.ipv6.conf.all.forwarding: "{{ '1' if ipv6_support else '0' }}"
+#  tags: os-hardening
+#
+#- name: dev-sec.ssh-hardening
+#  import_role:
+#    name: dev-sec.ssh-hardening
+#  tags: ssh-hardening
+
+- name: Include unatteded upgrades configuration
+  import_tasks: unattended-upgrades.yml
+
+- name: Disable MOTD on login and SSHD
+  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
+  with_items:
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
+
+- name: Loopback for services configured
+  template:
+    src: 10-algo-lo100.network.j2
+    dest: /etc/systemd/network/10-algo-lo100.network
+  notify:
+    - restart systemd-networkd
+
+- name: systemd services enabled and started
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  with_items:
+    - systemd-networkd
+    - systemd-resolved
+
+- meta: flush_handlers
+
+- name: Check apparmor support
+  command: apparmor_status
+  ignore_errors: yes
+  changed_when: false
+  register: apparmor_status
+
+- name: Set fact if apparmor enabled
+  set_fact:
+    apparmor_enabled: "{{ not apparmor_status.failed and 'profiles are in enforce mode' in apparmor_status.stdout }} "
+
+- name: Gather additional facts
+  import_tasks: facts.yml
+
+- name: Set OS specific facts
+  set_fact:
+    tools:
+      - git
+      - screen
+      - apparmor-utils
+      - uuid-runtime
+      - coreutils
+      - iptables-persistent
+      - cgroup-tools
+      - openssl
+      - gnupg2
+    sysctl:
+
+- name: Install tools
+  apt:
+    name: "{{ tools|default([]) }}"
+    state: present
+    update_cache: true
+
+- include_tasks: iptables.yml
+  tags: iptables
