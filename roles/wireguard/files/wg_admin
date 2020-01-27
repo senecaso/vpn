@@ -24,8 +24,14 @@ class WGConfig:
     def __init__(self, yaml_file, endpoint='localhost'):
         self.config = yaml.safe_load(yaml_file)
 
+        if not self.config:
+            self.config = {}
+
         if 'Endpoint' not in self.config:
-            self.config['Endpoint'] = endpoint
+            if endpoint:
+                self.config['Endpoint'] = endpoint
+            else:
+                self.config['Endpoint'] = 'localhost'
 
         if 'DNS' not in self.config:
             self.config['DNS'] = '1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001'
@@ -37,6 +43,10 @@ class WGConfig:
             self.config['Interface']['ListenPort'] = 51820
             self.config['Interface']['PrivateKey'] = generate_pk('wg')
             self.config['Interface']['SaveConfig'] = False
+
+        # if the server doesnt already have a private key, generate one now
+        if 'PrivateKey' not in self.config['Interface']:
+            self.config['Interface']['PrivateKey'] = generate_pk('wg')
 
         if 'Peers' not in self.config:
             self.config['Peers'] = {}
@@ -102,7 +112,7 @@ class WGConfig:
             config += 'PresharedKey = ' + self.config['Peers'][peer]['PresharedKey'] + '\n'
             config += 'AllowedIPs = ' + ', '.join([str(i) for i in self.config['Peers'][peer]['AllowedIPs']]) + '\n'
             config += '\n'
-        
+
         return config
 
     def __str__(self):
