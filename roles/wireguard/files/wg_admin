@@ -191,7 +191,7 @@ def ls(args):
 
 def sync(args):
     wg_config = WGConfig(args.input)
-    with os.fdopen(os.open(args.output, os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
+    with os.fdopen(os.open(args.output, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(wg_config.get_wg_config())
 
 

@@ -2,26 +2,20 @@
 - name: Gather facts
   setup:
 
-- name: AppArmor installed
-  apt:
-    name: apparmor
-    state: present
-    update_cache: true
+- name: dev-sec.os-hardening
+  import_role:
+    name: dev-sec.os-hardening
+  vars:
+    sysctl_overwrite:
+      net.ipv4.ip_forward: 1
+      net.ipv4.conf.all.forwarding: 1
+      net.ipv6.conf.all.forwarding: "{{ '1' if ipv6_support else '0' }}"
+  tags: os-hardening
 
-#- name: dev-sec.os-hardening
-#  import_role:
-#    name: dev-sec.os-hardening
-#  vars:
-#    sysctl_overwrite:
-#      net.ipv4.ip_forward: 1
-#      net.ipv4.conf.all.forwarding: 1
-#      net.ipv6.conf.all.forwarding: "{{ '1' if ipv6_support else '0' }}"
-#  tags: os-hardening
-#
-#- name: dev-sec.ssh-hardening
-#  import_role:
-#    name: dev-sec.ssh-hardening
-#  tags: ssh-hardening
+- name: dev-sec.ssh-hardening
+  import_role:
+    name: dev-sec.ssh-hardening
+  tags: ssh-hardening
 
 - name: Include unatteded upgrades configuration
   import_tasks: unattended-upgrades.yml
@@ -51,7 +45,17 @@
 
 - meta: flush_handlers
 
-- name: Check apparmor support
+- name: AppArmor installed
+  apt:
+    pkg:
+      - apparmor
+      - apparmor-utils
+      - apparmor-profiles
+      - apparmor-profiles-extra
+    state: present
+    update_cache: true
+
+- name: Check if apparmor is enabled
   command: apparmor_status
   ignore_errors: yes
   changed_when: false
@@ -59,7 +63,34 @@
 
 - name: Set fact if apparmor enabled
   set_fact:
-    apparmor_enabled: "{{ not apparmor_status.failed and 'profiles are in enforce mode' in apparmor_status.stdout }} "
+    apparmor_enabled: "{{ not apparmor_status.failed and 'profiles are in enforce mode' in apparmor_status.stdout }}"
+
+- debug:
+    msg: "apparmor_enabled: {{ apparmor_enabled }}"
+
+- block:
+  - name: enable apparmor on boot
+    lineinfile:
+      path: /boot/armbianEnv.txt
+      line: "extraargs=apparmor=1 security=apparmor"
+
+  - name: Reboot
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+    async: 1
+    poll: 0
+    ignore_errors: true
+
+  - name: Wait until the server becomes ready...
+    wait_for_connection:
+      delay: 20
+      timeout: 320
+    become: false
+
+  - name: enable apparmor profiles
+    shell: for f in /etc/apparmor.d/*.* ; do aa-enforce $f; done
+    become: true
+
+  when: apparmor_enabled == False
 
 - name: Gather additional facts
   import_tasks: facts.yml
@@ -69,7 +100,6 @@
     tools:
       - git
       - screen
-      - apparmor-utils
       - uuid-runtime
       - coreutils
       - iptables-persistent

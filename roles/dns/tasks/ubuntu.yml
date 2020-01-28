@@ -19,7 +19,6 @@
     command: aa-enforce usr.bin.dnscrypt-proxy
     changed_when: false
   tags: apparmor
-  when: apparmor_enabled|default(false)|bool
 
 - name: Ubuntu | Ensure that the dnscrypt-proxy service directory exist
   file:
