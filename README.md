@@ -39,7 +39,7 @@
     if you dont have a password manager that can generate good passwords for you, I suggest you use the following to generate a secure password.  Use as many characters as you can.  Do the same for the new user you create.  Dont worry, you wont need to use that password since you will be uploading an ssh key
 
     ```bash
-    openssl rand 64 -base64
+    openssl rand 128 -base64
     ```
 
 6. allow password-less sudo for your newly created user
