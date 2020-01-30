@@ -34,7 +34,7 @@ class WGConfig:
                 self.config['Endpoint'] = 'localhost'
 
         if 'DNS' not in self.config:
-            self.config['DNS'] = '1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001'
+            self.config['DNS'] = ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001']
 
         if 'Interface' not in self.config:
             # first time this has been run, set one up
@@ -175,10 +175,6 @@ def add(args):
     with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(yaml.dump(wg_config.config))
 
-    # sync the YAML with the INI
-    sync(args)
-
-
 def rm(args):
     wg_config = WGConfig(args.input)
     wg_config.rm_peer(args.peer)
@@ -186,9 +182,6 @@ def rm(args):
     # update the YAML file
     with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(yaml.dump(wg_config.config))
-
-    # sync the YAML with the INI
-    sync(args)
 
 def ls(args):
     wg_config = WGConfig(args.input)

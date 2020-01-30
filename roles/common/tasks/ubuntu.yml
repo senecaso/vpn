@@ -107,6 +107,7 @@
       - cgroup-tools
       - openssl
       - gnupg2
+      - qrencode
     sysctl:
 
 - name: Install tools

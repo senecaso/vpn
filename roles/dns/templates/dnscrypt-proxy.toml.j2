@@ -182,7 +182,7 @@ tls_disable_session_tickets = true
 ## Keep tls_cipher_suite empty if you have issues fetching sources or
 ## connecting to some DoH servers. Google and Cloudflare are fine with it.
 
-# tls_cipher_suite = [52392, 49199]
+tls_cipher_suite = [52392, 49199]
 
 
 ## Fallback resolver
@@ -199,7 +199,7 @@ tls_disable_session_tickets = true
 ## People in China may need to use 114.114.114.114:53 here.
 ## Other popular options include 8.8.8.8 and 1.1.1.1.
 
-fallback_resolver = 127.0.0.53:53
+fallback_resolver = "127.0.0.53:53"
 
 
 ## Never let dnscrypt-proxy try to use the system DNS settings;

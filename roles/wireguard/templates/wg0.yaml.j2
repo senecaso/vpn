@@ -1,4 +1,4 @@
-DNS: {{ wireguard_dns_servers }}
+DNS: [ {{ wireguard_dns_servers }} ]
 Endpoint: {{ IP_subject_alt_name }}
 Interface:
   Address: [ {{ wireguard_server_ip }} ]
