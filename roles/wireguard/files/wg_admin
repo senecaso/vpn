@@ -175,6 +175,9 @@ def add(args):
     with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(yaml.dump(wg_config.config))
 
+    # sync the YAML with the INI
+    sync(args)
+
 
 def rm(args):
     wg_config = WGConfig(args.input)
@@ -183,6 +186,9 @@ def rm(args):
     # update the YAML file
     with os.fdopen(os.open(args.input.name, os.O_TRUNC | os.O_WRONLY | os.O_CREAT, 0o600), 'w') as handle:
         handle.write(yaml.dump(wg_config.config))
+
+    # sync the YAML with the INI
+    sync(args)
 
 def ls(args):
     wg_config = WGConfig(args.input)
