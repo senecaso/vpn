@@ -29,12 +29,7 @@
 
 4. insert the SD card into your Nanopi Neo2 device and boot
 
-5. ssh to your device, change your root password, create a new user
-
-    ```bash
-    ssh root@<IP of nanopi device here>
-    # follow the prompts to change your password
-    ```
+5. ssh to your device(`ssh root@<IP of nanopi device here>`), change your root password, create a new user
 
     if you dont have a password manager that can generate good passwords for you, I suggest you use the following to generate a secure password.  Use as many characters as you can.  Do the same for the new user you create.  Dont worry, you wont need to use that password since you will be uploading an ssh key
 
@@ -60,13 +55,29 @@
     ssh-copy-id <username>@<IP of nanopi device here>
     ```
 
-9. run algo to deploy your VPN
+9. update `config.yml` to meet your requirements
+
+10. run algo to deploy your VPN
 
     ```bash
     ./algo
     ```
 
     Follow the prompts, and wait for the procedure to complete
+
+11. ssh to your new VPN (`ssh <username>@<IP of nanopi device here>`) and add some users
+
+    ```bash
+    sudo wgadmin add frank
+    sudo wgadmin add lisa
+    sudo wgadmin add tim
+    sudo wgadmin sync
+    sudo systemctl restart wg-quick@wg0
+
+    # generate a QR code for your new user
+    sudo cat /tmp/frank.conf | qrencode -t ansiutf8
+    sudo rm /tmp/frank.conf
+    ```
 
 #  About
 

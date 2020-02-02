@@ -5,6 +5,26 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
+# the version of dnscrypt-proxy included in Buster is too old what what Algo requires, do use the unstable repo to fetch the DEB
+- name: Add the repository
+  apt_repository:
+    state: present
+    repo: deb https://deb.debian.org/debian/ unstable main
+    update_cache: true
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
+
+# we only want specific packages from unstable, so pin it so that the stable packages have higher priority
+- name: Pin the unstable repository
+  copy:
+    src: pinning.pref
+    dest: /etc/apt/preferences.d/pinning.pref
+    owner: root
+    group: root
+    mode: 0644
+
 - name: dev-sec.os-hardening
   import_role:
     name: dev-sec.os-hardening
@@ -57,7 +77,6 @@
       - apparmor-profiles
       - apparmor-profiles-extra
     state: present
-    update_cache: true
 
 - name: Check if apparmor is enabled
   command: apparmor_status
@@ -114,7 +133,6 @@
   apt:
     name: "{{ tools|default([]) }}"
     state: present
-    update_cache: true
 
 - include_tasks: iptables.yml
   tags: iptables

@@ -1,34 +1,14 @@
 ---
-# the version included in Buster is too old what what Algo requires, do use the unstable repo to fetch the DEB
-- name: Add the repository
-  apt_repository:
-    state: present
-    repo: deb https://deb.debian.org/debian/ unstable main
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
-
-- name: Pin the repository so that we dont end up pulling all packages from unstable, just dnscrypt-proxy
-  copy:
-    src: pinning.pref
-    dest: /etc/apt/preferences.d/pinning.pref
-    owner: root
-    group: root
-    mode: 0644
-
 - name: Install dnscrypt-proxy
   apt:
     name: dnscrypt-proxy
     default_release: unstable
     state: present
-    update_cache: true
 
 - name: Install dnscrypt-proxy
   apt:
     name: dnscrypt-proxy
     state: present
-    update_cache: true
 
 - block:
   - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
@@ -43,6 +23,8 @@
   - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
     command: aa-enforce usr.bin.dnscrypt-proxy
     changed_when: false
+    notify: restart dnscrypt-proxy
+
   tags: apparmor
 
 - name: Ubuntu | Ensure that the dnscrypt-proxy service directory exist
