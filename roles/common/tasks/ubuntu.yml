@@ -5,6 +5,17 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
+# these keys are the signing keys for the debian unstable repo, so they are needed to pull packages from there
+- name: Add Debian key 1 from keyserver
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 04EE7237B7D453EC
+
+- name: Add Debian key 2 from keyserver
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 648ACFD622F3D138
+
 # the version of dnscrypt-proxy included in Buster is too old what what Algo requires, do use the unstable repo to fetch the DEB
 - name: Add the repository
   apt_repository:
