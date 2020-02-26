@@ -146,7 +146,12 @@ def add(args):
 
     client_conf = '[Interface]\n'
     client_conf += 'PrivateKey = ' + private_key + '\n'
-    client_conf += 'Address = ' + allowed_ips[0].replace('/32', '/24') + ', ' + allowed_ips[1].replace('/128', '/48') + '\n' # TODO: figure out how to properly generate these
+
+    # TODO: figure out how to properly generate these CIDRs
+    client_conf += 'Address = ' + allowed_ips[0].replace('/32', '/24')
+    if len(allowed_ips) == 2:
+        client_conf += ', ' + allowed_ips[1].replace('/128', '/48') + '\n'
+
     client_conf += 'DNS = ' + ', '.join(wg_config.get_dns()) + '\n'
     client_conf += "\n"
     client_conf += '[Peer]\n'
