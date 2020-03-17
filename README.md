@@ -81,4 +81,4 @@
 
 #  About
 
-This repo is based on a stripped down version of (algo)[https://github.com/trailofbits/algo]
+This repo is based on a stripped down version of [algo](https://github.com/trailofbits/algo)
