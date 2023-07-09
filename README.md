@@ -70,30 +70,32 @@ track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled
 
    When prompted, select `None of the above`, then select `UTC` from the next prompt
 
-8. setup the python3 virtualenv
+8. logout of the device
+
+9. setup the python3 virtualenv
 
    ```bash
    sudo apt install -y python3-virtualenv
    ```
 
-9. Install remaining dependencies
+10. Install remaining dependencies
 
-   ```bash
-   python3 -m virtualenv --python="$(command -v python3)" .env &&
-     source .env/bin/activate &&
-     python3 -m pip install -U pip &&
-     pip install -r requirements.txt
+    ```bash
+    python3 -m virtualenv --python="$(command -v python3)" .env &&
+      source .env/bin/activate &&
+      python3 -m pip install -U pip &&
+      pip install -r requirements.txt
 
-     ansible-galaxy collection install devsec.hardening
-   ```
+      ansible-galaxy collection install devsec.hardening
+    ```
 
-10. update `config.yml` to meet your requirements. The main values you will want to change are `server_public_ip` and `duckdns.domain` (if you want to enable
+11. update `config.yml` to meet your requirements. The main values you will want to change are `server_public_ip` and `duckdns.domain` (if you want to enable
     DuckDNS).
 
     - `server_public_ip` should be set to either the public IP address or hostname that your VPN clients will be connecting to.
     - `duckdns.domain` should be set to the domain you register on the [DuckDNS](https://www.duckdns.org/) website
 
-11. kick off ansible to deploy to your device
+12. kick off ansible to deploy to your device
 
     ```bash
     ansible-playbook -e 'ansible_user=<non-root username on device>' -i <IP of your device>, main.yml
@@ -103,18 +105,18 @@ track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled
 
     Follow the prompts, and wait for the procedure to complete
 
-12. ssh to your new VPN host, then change your root and non-root user's password now that the password hashing strategy has been hardened
+13. ssh to your new VPN host, then change your root and non-root user's password now that the password hashing strategy has been hardened
 
     ```bash
     sudo passwd
     passwd
     ```
 
-13. add some users to the VPN
+14. add some users to the VPN
 
     ```bash
     sudo wireguard-admin.sh
     ```
 
-14. configure your router/firewall to forward incoming UDP traffic to the IP of your new VPN server, using the port you specified in `config.cfg`.  
+15. configure your router/firewall to forward incoming UDP traffic to the IP of your new VPN server, using the port you specified in `config.cfg`.  
     This is left as an exercise for the reader, since every router and firewall is slightly different, you will need to sort that out on your own.
