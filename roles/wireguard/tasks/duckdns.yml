@@ -1,0 +1,41 @@
+---
+- name: install dependencies
+  when: duckdns.enabled == true
+  become: true
+  apt:
+    name:
+      - curl
+    state: present
+    update_cache: true
+
+- name: create the DuckDNS update script
+  when: duckdns.enabled == true
+  become: true
+  template:
+    src: update_duckdns.sh.j2
+    dest: /usr/bin/update_duckdns.sh
+    mode: "0500"
+
+- name: install the duckdns service
+  when: duckdns.enabled == true
+  become: true
+  copy:
+    src: update_duckdns.service
+    dest: /etc/systemd/system/update_duckdns.service
+    mode: "0444"
+
+- name: schedule regular duckdns updates
+  when: duckdns.enabled == true
+  become: true
+  copy:
+    src: update_duckdns.timer
+    dest: /etc/systemd/system/update_duckdns.timer
+    mode: "0444"
+
+- name: enable service update_duckdns
+  when: duckdns.enabled == true
+  become: true
+  ansible.builtin.systemd:
+    name: update_duckdns.timer
+    enabled: true
+    state: started

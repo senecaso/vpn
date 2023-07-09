@@ -1,0 +1,46 @@
+---
+- name: Upgrade all packages on debian servers
+  become: true
+  when: ansible_os_family == 'Debian'
+  apt: upgrade=yes force_apt_get=yes
+
+- name: install dependencies
+  become: true
+  apt:
+    name:
+      - wireguard
+      - iptables
+      - resolvconf
+      - qrencode
+    state: present
+    update_cache: true
+
+- name: make sure wireguard config directory exists
+  become: yes
+  file:
+    path: /etc/wireguard
+    state: directory
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: copy the upgrade check script
+  copy:
+    src: wireguard-admin.sh
+    dest: /usr/bin/wireguard-admin.sh
+    mode: "0555"
+
+- name: install wireguard
+  ansible.builtin.shell: "wireguard-admin.sh"
+  args:
+    creates: /etc/wireguard/params
+  environment:
+    SERVER_PUB_IP: "{{ server_public_ip }}"
+    SERVER_PUB_NIC: "{{ server_public_nic }}"
+    SERVER_WG_NIC: "{{ server_wg_nic }}"
+    SERVER_WG_IPV4: "{{ server_wg_ipv4 }}"
+    SERVER_WG_IPV6: "{{ server_wg_ipv6 }}"
+    SERVER_PORT: "{{ server_port }}"
+    CLIENT_DNS_1: "{{ client_primary_dns }}"
+    CLIENT_DNS_2: "{{ client_secondary_dns }}"
+    ALLOWED_IPS: "{{ allowed_ips }}"

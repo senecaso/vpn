@@ -1,0 +1,9 @@
+[Unit]
+Description=Update IP in DuckDNS
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/update_duckdns.sh
+
+[Install]
+WantedBy=multi-user.target
