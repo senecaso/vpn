@@ -11,7 +11,9 @@ may be a viable option for you as it has been for me.
 # How
 
 This has been deployed and tested on a [FriendlyElec NanoPi NEO2](https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO2) using [Armbian](https://www.armbian.com/nanopi-neo-2/). It
-should work on any modern Debian/Ubuntu host though. During the install, the OS and sshd are hardened using [devsec.hardening](https://github.com/dev-sec/ansible-collection-hardening).
+should work on any modern Debian/Ubuntu host though, and would likely work on many other SBCs. During the install, the OS and `sshd` are hardened using [devsec.hardening](https://github.com/dev-sec/ansible-collection-hardening). Also
+uses a modified version of [wireguard-install](https://github.com/angristan/wireguard-install) for VPN user management. For users that don't already have a domain registered that they can use to
+track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled to support dynamic DNS for free.
 
 # Alternatives
 
@@ -108,8 +110,11 @@ should work on any modern Debian/Ubuntu host though. During the install, the OS 
     passwd
     ```
 
-13. add some users
+13. add some users to the VPN
 
     ```bash
     sudo wireguard-admin.sh
     ```
+
+14. configure your router/firewall to forward incoming UDP traffic to the IP of your new VPN server, using the port you specified in `config.cfg`.  
+    This is left as an exercise for the reader, since every router and firewall is slightly different, you will need to sort that out on your own.
