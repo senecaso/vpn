@@ -1,0 +1,11 @@
+[Unit]
+Description=updates public IP with DuckDNS
+Requires=update_duckdns.service
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=60min
+Unit=update_duckdns.service
+
+[Install]
+WantedBy=timers.target
