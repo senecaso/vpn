@@ -100,7 +100,7 @@ track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled
 12. kick off ansible to deploy to your device
 
     ```bash
-    ansible-playbook -e 'ansible_user=<non-root username on device>' -i <IP of your device>, main.yml
+    ansible-playbook -e 'ansible_user=<non-root username on device>' -i <IP of your device>, main.yml --key-file "~/.ssh/my_vpn_key"
     ```
 
     NB: the `,` after the host IP is important!

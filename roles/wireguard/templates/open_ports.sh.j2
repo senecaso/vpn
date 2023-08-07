@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export LC_ALL=C
+router=$(ip r | grep default | cut -d " " -f 3)
+gateway=$(upnpc -l | grep "desc: http://$router:[0-9]*/rootDesc.xml" | cut -d " " -f 3)
+ip=$(upnpc -l | grep "Local LAN ip address" | cut -d: -f2)
+
+external={{ upnp.external_port }}
+port={{ server_port }}
+upnpc -u $gateway -d $external UDP
+upnpc -u $gateway -e "port mapping for wireguard" -a $ip $port $external UDP

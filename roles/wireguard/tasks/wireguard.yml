@@ -53,12 +53,17 @@
     dest: /usr/bin/open_ports.sh
     mode: "0555"
 
-- name: enable upnp openning of ports
+- name: install the open_ports service
+  become: true
+  copy:
+    src: open_ports.service
+    dest: /etc/systemd/system/open_ports.service
+    mode: "0444"
+
+- name: enable service open_ports
   when: upnp.enabled == true
   become: true
-  ansible.builtin.file:
-    src: /usr/bin/open_ports.sh
-    dest: /etc/dhcp/dhclient-exit-hooks.d/open_ports.sh
-    owner: root
-    group: root
-    state: link
+  ansible.builtin.systemd:
+    name: open_ports.service
+    enabled: true
+    state: started

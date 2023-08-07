@@ -1,0 +1,12 @@
+[Unit]
+Description=Service on interface eth0
+BindsTo=sys-subsystem-net-devices-eth0.device
+After=sys-subsystem-net-devices-eth0.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/open_ports.sh
+
+[Install]
+WantedBy=multi-user.target
