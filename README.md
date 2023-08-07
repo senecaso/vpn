@@ -36,12 +36,14 @@ track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled
 
    you can get the IP of your host by checking the DHCP logs on your router to see which IP address is was assigned. The device should appear as `nanopi` (or similar)
 
+   The default password for your device will depend on which image you installed, but Armbian typically uses `1234` for its default root password.
+
 3. follow the prompts. This will create a non-root user with sudo access
 
-   if you dont have a password manager that can generate good passwords for you, I suggest you use the following to generate a secure password. Use as many characters as you can. Do the same for the new user you create. Dont worry, you wont need to use that password since you will be uploading an ssh key
+   if you dont have a password manager that can generate good passwords for you, I suggest you use the following to generate a secure password. Use as many characters as you can. Do the same for the new user you create. Dont worry, you won't need to use that password since you will be uploading an ssh key and all SSH based password authentication will be disabled
 
    ```bash
-   openssl rand 128 -base64
+   openssl rand -base64 128
    ```
 
 4. allow password-less sudo for your newly created user
@@ -56,13 +58,13 @@ track the IP of their server, [DuckDNS](https://www.duckdns.org/) can be enabled
 
 5. logout of your device
 
-6. Copy your ssh key to your device
+6. Copy your ssh key to your device. All password based ssh logins will be disabled, so this will be the only way to ssh into your device
 
    ```bash
    ssh-copy-id <username>@<IP of nanopi device here>
    ```
 
-7. [optional] ssh back into your devide, then update host timezone to UTC
+7. [optional] ssh back into your device, then update host timezone to UTC
 
    ```bash
    sudo dpkg-reconfigure tzdata

@@ -12,6 +12,7 @@
       - iptables
       - resolvconf
       - qrencode
+      - miniupnpc
     state: present
     update_cache: true
 
@@ -44,3 +45,20 @@
     CLIENT_DNS_1: "{{ client_primary_dns }}"
     CLIENT_DNS_2: "{{ client_secondary_dns }}"
     ALLOWED_IPS: "{{ allowed_ips }}"
+
+- name: create the open_ports script
+  become: true
+  template:
+    src: open_ports.sh.j2
+    dest: /usr/bin/open_ports.sh
+    mode: "0555"
+
+- name: enable upnp openning of ports
+  when: upnp.enabled == true
+  become: true
+  ansible.builtin.file:
+    src: /usr/bin/open_ports.sh
+    dest: /etc/dhcp/dhclient-exit-hooks.d/open_ports.sh
+    owner: root
+    group: root
+    state: link
